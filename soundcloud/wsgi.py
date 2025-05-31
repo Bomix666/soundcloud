@@ -1,5 +1,5 @@
 """
-WSGI config for soundcloud project.
+WSGI config for music25 project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

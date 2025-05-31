@@ -1,5 +1,5 @@
 """
-ASGI config for soundcloud project.
+ASGI config for music25 project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 

@@ -19,6 +19,17 @@
             <button class="btn" id="like-btn" data-liked="{{ is_liked|yesno:'1,0' }}">❤️ <span id="like-count">{{ track.like_count }}</span></button>
             <button class="btn" id="fav-btn" data-fav="{{ is_favorited|yesno:'1,0' }}">⭐</button>
         </div>
+        {% if user.is_authenticated and user != track.owner %}
+        <hr>
+        <form method="post" action="/invite/send/{{ track.id }}/" style="margin-top:16px;">
+            {% csrf_token %}
+            <label for="to_user">Кому (ник):</label>
+            <input type="text" name="to_user" id="to_user" required placeholder="Введите ник пользователя">
+            <label for="message">Сообщение (необязательно):</label>
+            <textarea name="message" id="message" rows="2" placeholder="Текст приглашения"></textarea>
+            <button class="btn" type="submit">Пригласить к совместной работе</button>
+        </form>
+        {% endif %}
     </div>
 </div>
 <audio id="audio" class="audio-player" controls src="{{ track.audio_file.url }}"></audio>
@@ -38,4 +49,6 @@ document.getElementById('fav-btn').onclick = function() {
       });
 };
 </script>
+{% if invite_error %}<div style="color:red">{{ invite_error }}</div>{% endif %}
+{% if invite_success %}<div style="color:green">{{ invite_success }}</div>{% endif %}
 {% endblock %}

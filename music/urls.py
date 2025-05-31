@@ -11,6 +11,7 @@ urlpatterns = [
     path('upload/', views.upload_track, name='upload_track'),
     path('invites/', views.invites, name='invites'),
     path('invite/respond/<int:invite_id>/', views.invite_respond, name='invite_respond'),
+    path('invite/send/<int:track_id>/', views.send_invite, name='send_invite'),
     path('like/<int:track_id>/', views.like_track, name='like_track'),
     path('favorite/<int:track_id>/', views.favorite_track, name='favorite_track'),
 ]

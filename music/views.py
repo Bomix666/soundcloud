@@ -61,14 +61,44 @@ def track_detail(request, track_id):
     track = get_object_or_404(Track, id=track_id)
     is_liked = False
     is_favorited = False
+    context = {'track': track, 'is_liked': is_liked, 'is_favorited': is_favorited}
     if request.user.is_authenticated:
         is_liked = Like.objects.filter(user=request.user, track=track).exists()
         is_favorited = track in request.user.favorite_tracks.all()
-    return render(request, 'music/track_detail.html', {
-        'track': track,
-        'is_liked': is_liked,
-        'is_favorited': is_favorited,
-    })
+        context['is_liked'] = is_liked
+        context['is_favorited'] = is_favorited
+    if 'invite_error' in request.GET:
+        context['invite_error'] = request.GET['invite_error']
+    if 'invite_success' in request.GET:
+        context['invite_success'] = request.GET['invite_success']
+    return render(request, 'music/track_detail.html', context)
+
+from django.views.decorators.http import require_POST
+
+@login_required
+@require_POST
+def send_invite(request, track_id):
+    track = get_object_or_404(Track, id=track_id)
+    to_user_nick = request.POST.get('to_user', '').strip()
+    message = request.POST.get('message', '').strip()
+    if not to_user_nick:
+        return redirect(f'/track/{track_id}/?invite_error=Укажите+ник+пользователя')
+    try:
+        to_user = User.objects.get(nickname=to_user_nick)
+    except User.DoesNotExist:
+        return redirect(f'/track/{track_id}/?invite_error=Пользователь+не+найден')
+    if to_user == request.user:
+        return redirect(f'/track/{track_id}/?invite_error=Нельзя+пригласить+самого+себя')
+    # Проверка на дубликат (pending)
+    if Invite.objects.filter(from_user=request.user, to_user=to_user, track_title=track.title, status='pending').exists():
+        return redirect(f'/track/{track_id}/?invite_error=У+вас+уже+есть+отправленный+инвайт+этому+пользователю+на+этот+трек')
+    Invite.objects.create(
+        from_user=request.user,
+        to_user=to_user,
+        track_title=track.title,
+        message=message
+    )
+    return redirect(f'/track/{track_id}/?invite_success=Инвайт+отправлен')
 
 # Загрузка трека
 @login_required
